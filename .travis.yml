@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 dist: trusty
 language: ruby
 before_install: gem install bundler -v 1.15.1
