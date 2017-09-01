@@ -1,9 +1,15 @@
-sudo: false
+sudo: required
 dist: trusty
 language: ruby
 before_install: gem install bundler -v 1.15.1
 
+services:
+  - mongodb
+
 script:
+  # Arbitrary sleep to prevent from some Mongoid issues
+  # https://docs.travis-ci.com/user/database-setup/#MongoDB-does-not-immediately-accept-connections
+  - sleep 25
   - bundle exec rspec
 
 rvm:
@@ -26,6 +32,14 @@ matrix:
       gemfile: "gemfiles/Rails-4.1.gemfile"
     - rvm: "2.2"
       gemfile: "gemfiles/Rails-4.0.gemfile"
+    - rvm: "2.4"
+      gemfile: "gemfiles/Rails-5.1.gemfile"
+      env:
+        - WITHOUT_ACTIVE_RECORD: "1"
+    - rvm: "2.4"
+      gemfile: "gemfiles/Rails-5.1.gemfile"
+      env:
+        - WITHOUT_MONGOID: "1"
 
   allow_failures:
     - rvm: "ruby-head"

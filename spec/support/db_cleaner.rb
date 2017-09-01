@@ -2,9 +2,18 @@ require "database_cleaner"
 
 RSpec.configure do |config|
   config.before(:suite) do
-    DatabaseCleaner.clean_with(:truncation)
+    unless ENV["WITHOUT_ACTIVE_RECORD"]
+      DatabaseCleaner[:active_record].strategy = :truncation
+    end
 
-    DatabaseCleaner.strategy = :truncation
+    # Since models are defined dynamically in specs, Database Cleaner is unable
+    # to list them and to determine collection names to be cleaned.
+    # Therefore, they are specified explicitly here.
+    unless ENV["WITHOUT_MONGOID"]
+      DatabaseCleaner[:mongoid].strategy = :truncation, { only: "users" }
+    end
+
+    DatabaseCleaner.clean_with(:truncation)
   end
 
   config.around(:each) do |example|

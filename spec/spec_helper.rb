@@ -4,7 +4,7 @@
 require "bundler"
 Bundler.require :default, :development
 
-Dir[File.expand_path "../support/**/*.rb", __FILE__].each { |f| require f }
+Dir[File.expand_path "../support/**/*.rb", __FILE__].sort.each { |f| require f }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -17,5 +17,3 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
-
-require "rails/all"

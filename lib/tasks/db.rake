@@ -16,6 +16,13 @@ namespace :db do
   # http://stackoverflow.com/questions/14163938/activerecordconnectionnotestablished-within-a-rake-task
   #
   task :mask => :environment do
-    AttrMasker::Performer::ActiveRecord.new.mask
+    performers = AttrMasker::Performer::Base.descendants.map(&:new)
+    performers.select!(&:dependencies_available?)
+
+    if performers.empty?
+      raise AttrMasker::Error, "No supported database!"
+    end
+
+    performers.each(&:mask)
   end
 end

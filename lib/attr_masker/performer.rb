@@ -2,12 +2,8 @@
 #
 module AttrMasker
   module Performer
-    class ActiveRecord
+    class Base
       def mask
-        unless defined? ::ActiveRecord
-          raise AttrMasker::Error, "ActiveRecord undefined. Nothing to do!"
-        end
-
         # Do not want production environment to be masked!
         #
         if Rails.env.production?
@@ -44,7 +40,7 @@ module AttrMasker
           acc.merge!(column_name => masker_value)
         end
 
-        klass.all.unscoped.update(instance.id, updates)
+        make_update instance, updates unless updates.empty?
       end
 
       def progressbar_for_model(klass)
@@ -59,9 +55,33 @@ module AttrMasker
       ensure
         bar.finish
       end
+    end
+
+    class ActiveRecord < Base
+      def dependencies_available?
+        defined? ::ActiveRecord
+      end
 
       def all_models
         ::ActiveRecord::Base.descendants.select(&:table_exists?)
+      end
+
+      def make_update(instance, updates)
+        instance.class.all.unscoped.update(instance.id, updates)
+      end
+    end
+
+    class Mongoid < Base
+      def dependencies_available?
+        defined? ::Mongoid
+      end
+
+      def all_models
+        ::Mongoid.models
+      end
+
+      def make_update(instance, updates)
+        instance.class.all.unscoped.where(id: instance.id).update(updates)
       end
     end
   end
